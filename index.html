@@ -785,5 +785,22 @@
 <!-- 11. نقطة البداية الرئيسية (يجب أن يُحمَّل أخيراً) -->
 <script src="js/app.js"></script>
 
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDUcQyht2D6vpuUZyCQTXEqtLZf4Feo5aM",
+    authDomain: "acca-app-80ca8.firebaseapp.com",
+    projectId: "acca-app-80ca8",
+    storageBucket: "acca-app-80ca8.firebasestorage.app",
+    messagingSenderId: "196121768353",
+    appId: "1:196121768353:web:e0623f775bb3f0409e1be0"
+  };
+
+  // أضف هذين السطرين لتفعيل الاتصال فعلياً
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore(); 
+</script>
 </body>
 </html>
