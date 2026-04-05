@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>نظام المحاسبة التدريبي</title>
+
+<!-- ===== الخطوط ===== -->
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+
+<!-- ===== التنسيقات ===== -->
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ==================== الشريط الجانبي (Sidebar) ==================== -->
+<div id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+<nav id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">📒</div>
+    <div class="logo-text">
+      <h1>نظام المحاسبة</h1>
+      <p>للخريجين الجامعيين</p>
+    </div>
+  </div>
+
+  <div class="sidebar-section-title">الرئيسية</div>
+  <div class="nav-item active" onclick="navigate('dashboard')"><span class="nav-icon">📊</span> لوحة التحكم</div>
+
+  <div class="sidebar-section-title">القيود والدفاتر</div>
+  <div class="nav-item" onclick="navigate('journal')"><span class="nav-icon">📝</span> قيود اليومية</div>
+  <div class="nav-item" onclick="navigate('ledger')"><span class="nav-icon">📖</span> دفتر الأستاذ</div>
+  <div class="nav-item" onclick="navigate('trial-balance')"><span class="nav-icon">⚖️</span> ميزان المراجعة</div>
+
+  <div class="sidebar-section-title">القوائم المالية</div>
+  <div class="nav-item" onclick="navigate('income-statement')"><span class="nav-icon">📈</span> قائمة الدخل</div>
+  <div class="nav-item" onclick="navigate('balance-sheet')"><span class="nav-icon">🏛️</span> الميزانية العمومية</div>
+  <div class="nav-item" onclick="navigate('cash-flow')"><span class="nav-icon">💸</span> قائمة التدفقات</div>
+
+  <div class="sidebar-section-title">المبيعات والمشتريات</div>
+  <div class="nav-item" onclick="navigate('sales')"><span class="nav-icon">🧾</span> فواتير المبيعات</div>
+  <div class="nav-item" onclick="navigate('purchases')"><span class="nav-icon">📦</span> فواتير المشتريات</div>
+  <div class="nav-item" onclick="navigate('inventory')"><span class="nav-icon">🗃️</span> المخزون</div>
+
+  <div class="sidebar-section-title">العملاء والموردون</div>
+  <div class="nav-item" onclick="navigate('customers')"><span class="nav-icon">👤</span> العملاء</div>
+  <div class="nav-item" onclick="navigate('suppliers')"><span class="nav-icon">🏭</span> الموردون</div>
+
+  <div class="sidebar-section-title">الإدارة</div>
+  <div class="nav-item" onclick="navigate('accounts')"><span class="nav-icon">🗂️</span> شجرة الحسابات</div>
+  <div class="nav-item" onclick="navigate('reports')"><span class="nav-icon">📋</span> التقارير</div>
+  <div class="nav-item" onclick="navigate('settings')"><span class="nav-icon">⚙️</span> الإعدادات</div>
+</nav>
+
+<!-- ==================== المحتوى الرئيسي (Main) ==================== -->
+<div id="main">
+
+  <!-- الشريط العلوي -->
+  <div id="topbar">
+    <div class="topbar-right">
+      <button id="toggle-sidebar" onclick="toggleSidebar()" title="إظهار/إخفاء القائمة">☰</button>
+      <div>
+        <h2 id="page-title">لوحة التحكم</h2>
+        <p id="page-sub">نظرة شاملة على الوضع المالي</p>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-print no-print" onclick="printPage()">🖨️ <span>طباعة</span></button>
+      <button class="btn btn-ghost no-print" onclick="exportData()">📤 <span>تصدير</span></button>
+      <button class="btn btn-primary no-print" onclick="showAddModal()">+ <span>إضافة</span></button>
+    </div>
+  </div>
+
+  <!-- منطقة المحتوى -->
+  <div id="content">
+
+    <!-- ==================== لوحة التحكم ==================== -->
+    <div class="page active" id="page-dashboard">
+      <div class="kpi-grid">
+        <div class="kpi-card blue">
+          <div class="kpi-label">إجمالي الإيرادات</div>
+          <div class="kpi-value text-accent" id="kpi-revenue">0</div>
+          <div class="kpi-sub">ريال</div>
+          <div class="kpi-icon">💰</div>
+        </div>
+        <div class="kpi-card red">
+          <div class="kpi-label">إجمالي المصروفات</div>
+          <div class="kpi-value text-red" id="kpi-expenses">0</div>
+          <div class="kpi-sub">ريال</div>
+          <div class="kpi-icon">📉</div>
+        </div>
+        <div class="kpi-card green">
+          <div class="kpi-label">صافي الربح/الخسارة</div>
+          <div class="kpi-value" id="kpi-net">0</div>
+          <div class="kpi-sub">ريال</div>
+          <div class="kpi-icon">📊</div>
+        </div>
+        <div class="kpi-card purple">
+          <div class="kpi-label">إجمالي القيود</div>
+          <div class="kpi-value text-accent" id="kpi-entries">0</div>
+          <div class="kpi-sub">قيد</div>
+          <div class="kpi-icon">📝</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+        <div class="kpi-card teal">
+          <div class="kpi-label">إجمالي مبيعات الفترة</div>
+          <div class="kpi-value text-green" id="kpi-sales">0</div>
+          <div class="kpi-sub">ريال</div>
+          <div class="kpi-icon">🧾</div>
+        </div>
+        <div class="kpi-card blue">
+          <div class="kpi-label">إجمالي مشتريات الفترة</div>
+          <div class="kpi-value text-accent" id="kpi-purch">0</div>
+          <div class="kpi-sub">ريال</div>
+          <div class="kpi-icon">📦</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div class="card">
+          <div class="card-title"><span class="dot"></span>آخر القيود</div>
+          <div class="table-wrap">
+            <table><thead><tr><th>التاريخ</th><th>البيان</th><th>المبلغ</th></tr></thead>
+            <tbody id="dash-entries-body"><tr><td colspan="3"><div class="empty-state"><div class="empty-icon">📝</div><p>لا قيود بعد</p></div></td></tr></tbody></table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="dot" style="background:var(--green)"></span>آخر الفواتير</div>
+          <div class="table-wrap">
+            <table><thead><tr><th>الفاتورة</th><th>النوع</th><th>المبلغ</th></tr></thead>
+            <tbody id="dash-invoices-body"><tr><td colspan="3"><div class="empty-state"><div class="empty-icon">🧾</div><p>لا فواتير بعد</p></div></td></tr></tbody></table>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="dot" style="background:var(--yellow)"></span>تنبيهات المخزون المنخفض</div>
+        <div id="dash-inventory-alerts"><div class="empty-state"><div class="empty-icon">✅</div><p>لا تنبيهات</p></div></div>
+      </div>
+    </div>
+
+    <!-- ==================== قيود اليومية ==================== -->
+    <div class="page" id="page-journal">
+      <div class="flex items-center justify-between mb-16 no-print">
+        <div></div>
+        <button class="btn btn-primary" onclick="openJournalModal()">+ قيد جديد</button>
+      </div>
+      <div class="card">
+        <div class="print-page-header"><h2 id="pph-journal"></h2><p>سجل القيود اليومية</p></div>
+        <div class="card-title"><span class="dot"></span>سجل القيود اليومية</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>التاريخ</th><th>رقم القيد</th><th>البيان</th><th>المدين</th><th>الدائن</th><th>الحالة</th><th class="no-print">إجراءات</th></tr></thead>
+            <tbody id="journal-body"><tr><td colspan="8"><div class="empty-state"><div class="empty-icon">📝</div><p>أضف أول قيد محاسبي</p></div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== دفتر الأستاذ ==================== -->
+    <div class="page" id="page-ledger">
+      <div class="card">
+        <div class="print-page-header"><h2 id="pph-ledger"></h2><p>دفتر الأستاذ العام</p></div>
+        <div class="card-title"><span class="dot"></span>دفتر الأستاذ العام</div>
+        <div class="form-group mb-16 no-print" style="max-width:280px">
+          <label>تصفية بالحساب</label>
+          <select id="ledger-filter" onchange="renderLedger()"><option value="">كل الحسابات</option></select>
+        </div>
+        <div id="ledger-content"><div class="empty-state"><div class="empty-icon">📖</div><p>لا توجد حركات بعد</p></div></div>
+      </div>
+    </div>
+
+    <!-- ==================== ميزان المراجعة ==================== -->
+    <div class="page" id="page-trial-balance">
+      <div class="card">
+        <div class="print-page-header"><h2 id="pph-tb"></h2><p>ميزان المراجعة</p></div>
+        <div class="card-title"><span class="dot"></span>ميزان المراجعة</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>رقم الحساب</th><th>اسم الحساب</th><th>مجموع المدين</th><th>مجموع الدائن</th><th>رصيد مدين</th><th>رصيد دائن</th></tr></thead>
+            <tbody id="trial-body"></tbody>
+            <tfoot>
+              <tr class="trial-total">
+                <td colspan="2" style="padding:9px 11px;font-weight:800">الإجمالي</td>
+                <td id="tt-debit"      style="padding:9px 11px"></td>
+                <td id="tt-credit"     style="padding:9px 11px"></td>
+                <td id="tt-bal-debit"  style="padding:9px 11px"></td>
+                <td id="tt-bal-credit" style="padding:9px 11px"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        <div id="balance-status" style="margin-top:12px"></div>
+      </div>
+    </div>
+
+    <!-- ==================== قائمة الدخل ==================== -->
+    <div class="page" id="page-income-statement">
+      <div class="card" style="max-width:680px">
+        <div class="print-page-header"><h2 id="pph-is"></h2><p>قائمة الدخل</p></div>
+        <div style="text-align:center;margin-bottom:18px">
+          <h2 id="is-company" style="font-size:18px;font-weight:900"></h2>
+          <p style="color:var(--text3);font-size:12px">قائمة الدخل للفترة الحالية</p>
+        </div>
+        <div class="fs-section">
+          <div class="fs-section-title">الإيرادات</div>
+          <div id="is-revenues"></div>
+          <div class="fs-row fs-total"><span>إجمالي الإيرادات</span><span class="text-green fw-800" id="is-total-rev">0</span></div>
+        </div>
+        <div class="fs-section">
+          <div class="fs-section-title">تكلفة المبيعات</div>
+          <div id="is-cogs"></div>
+          <div class="fs-row fs-total"><span>إجمالي التكلفة</span><span class="text-red fw-800" id="is-total-cogs">0</span></div>
+        </div>
+        <div class="fs-row" style="background:var(--surface2);border-radius:8px;padding:11px 13px;margin:9px 0;font-size:14px;font-weight:800">
+          <span>مجمل الربح</span><span id="is-gross-profit" class="text-accent"></span>
+        </div>
+        <div class="fs-section">
+          <div class="fs-section-title">المصروفات التشغيلية</div>
+          <div id="is-expenses"></div>
+          <div class="fs-row fs-total"><span>إجمالي المصروفات</span><span class="text-red fw-800" id="is-total-exp">0</span></div>
+        </div>
+        <div class="fs-row" style="background:var(--accent-glow);border-radius:8px;padding:13px;margin-top:11px;font-size:16px;font-weight:900;border:1px solid var(--accent)">
+          <span>صافي الربح / الخسارة</span><span id="is-net-profit"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== الميزانية العمومية ==================== -->
+    <div class="page" id="page-balance-sheet">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+        <div class="card">
+          <div class="print-page-header"><h2 id="pph-bs"></h2><p>الميزانية العمومية - الأصول</p></div>
+          <div style="text-align:center;margin-bottom:14px"><h3 style="font-weight:800;font-size:15px">الأصول</h3></div>
+          <div class="fs-section">
+            <div class="fs-section-title">الأصول المتداولة</div>
+            <div id="bs-current-assets"></div>
+            <div class="fs-row fs-total"><span>مجموع الأصول المتداولة</span><span class="text-accent fw-800" id="bs-total-current-assets">0</span></div>
+          </div>
+          <div class="fs-section">
+            <div class="fs-section-title">الأصول الثابتة</div>
+            <div id="bs-fixed-assets"></div>
+            <div class="fs-row fs-total"><span>مجموع الأصول الثابتة</span><span class="text-accent fw-800" id="bs-total-fixed-assets">0</span></div>
+          </div>
+          <div class="fs-row" style="background:var(--accent-glow);border-radius:8px;padding:11px;font-size:14px;font-weight:900;border:1px solid var(--accent)">
+            <span>إجمالي الأصول</span><span id="bs-total-assets" class="text-accent"></span>
+          </div>
+        </div>
+        <div class="card">
+          <div style="text-align:center;margin-bottom:14px"><h3 style="font-weight:800;font-size:15px">الخصوم وحقوق الملكية</h3></div>
+          <div class="fs-section">
+            <div class="fs-section-title">الخصوم المتداولة</div>
+            <div id="bs-current-liabilities"></div>
+            <div class="fs-row fs-total"><span>مجموع الخصوم</span><span class="text-red fw-800" id="bs-total-current-liab">0</span></div>
+          </div>
+          <div class="fs-section">
+            <div class="fs-section-title">حقوق الملكية</div>
+            <div id="bs-equity"></div>
+            <div class="fs-row fs-total"><span>مجموع حقوق الملكية</span><span class="text-green fw-800" id="bs-total-equity">0</span></div>
+          </div>
+          <div class="fs-row" style="background:var(--green-dim);border-radius:8px;padding:11px;font-size:14px;font-weight:900;border:1px solid var(--green)">
+            <span>إجمالي الخصوم وحقوق الملكية</span><span id="bs-total-liab-equity" class="text-green"></span>
+          </div>
+          <div id="bs-balance-status" style="margin-top:12px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== قائمة التدفقات النقدية ==================== -->
+    <div class="page" id="page-cash-flow">
+      <div class="card" style="max-width:680px">
+        <div class="print-page-header"><h2 id="pph-cf"></h2><p>قائمة التدفقات النقدية</p></div>
+        <div style="text-align:center;margin-bottom:18px"><h2 style="font-size:17px;font-weight:900">قائمة التدفقات النقدية</h2></div>
+        <div class="fs-section">
+          <div class="fs-section-title">التدفقات التشغيلية</div>
+          <div id="cf-operating"></div>
+          <div class="fs-row fs-total"><span>صافي التدفقات التشغيلية</span><span id="cf-net-oper" class="fw-800"></span></div>
+        </div>
+        <div class="fs-section">
+          <div class="fs-section-title">التدفقات الاستثمارية</div>
+          <div id="cf-investing"></div>
+          <div class="fs-row fs-total"><span>صافي التدفقات الاستثمارية</span><span id="cf-net-inv" class="fw-800"></span></div>
+        </div>
+        <div class="fs-section">
+          <div class="fs-section-title">التدفقات التمويلية</div>
+          <div id="cf-financing"></div>
+          <div class="fs-row fs-total"><span>صافي التدفقات التمويلية</span><span id="cf-net-fin" class="fw-800"></span></div>
+        </div>
+        <div class="fs-row" style="background:var(--accent-glow);border-radius:8px;padding:13px;font-size:15px;font-weight:900;border:1px solid var(--accent);margin-top:11px">
+          <span>صافي التغير في النقدية</span><span id="cf-net-total" class="text-accent"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== فواتير المبيعات ==================== -->
+    <div class="page" id="page-sales">
+      <div class="flex items-center justify-between mb-16 no-print">
+        <div></div>
+        <button class="btn btn-success" onclick="openInvoiceModal('sale')">+ فاتورة مبيعات</button>
+      </div>
+      <div class="card">
+        <div class="print-page-header"><h2 id="pph-sales"></h2><p>فواتير المبيعات</p></div>
+        <div class="card-title"><span class="dot" style="background:var(--green)"></span>فواتير المبيعات</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>رقم الفاتورة</th><th>التاريخ</th><th>العميل</th><th>أصناف</th><th>الإجمالي</th><th>ضريبة</th><th>الإجمالي شامل</th><th>الحالة</th><th class="no-print">إجراءات</th></tr></thead>
+            <tbody id="sales-body"><tr><td colspan="9"><div class="empty-state"><div class="empty-icon">🧾</div><p>لا فواتير مبيعات</p></div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== فواتير المشتريات ==================== -->
+    <div class="page" id="page-purchases">
+      <div class="flex items-center justify-between mb-16 no-print">
+        <div></div>
+        <button class="btn btn-primary" onclick="openInvoiceModal('purchase')">+ فاتورة مشتريات</button>
+      </div>
+      <div class="card">
+        <div class="print-page-header"><h2 id="pph-purch"></h2><p>فواتير المشتريات</p></div>
+        <div class="card-title"><span class="dot" style="background:var(--purple)"></span>فواتير المشتريات</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>رقم الفاتورة</th><th>التاريخ</th><th>المورد</th><th>أصناف</th><th>الإجمالي</th><th>ضريبة</th><th>الإجمالي شامل</th><th>الحالة</th><th class="no-print">إجراءات</th></tr></thead>
+            <tbody id="purchases-body"><tr><td colspan="9"><div class="empty-state"><div class="empty-icon">📦</div><p>لا فواتير مشتريات</p></div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== المخزون ==================== -->
+    <div class="page" id="page-inventory">
+      <div class="flex items-center justify-between mb-16 no-print">
+        <div></div>
+        <button class="btn btn-primary" onclick="openInventoryModal()">+ صنف جديد</button>
+      </div>
+      <div class="card">
+        <div class="print-page-header"><h2 id="pph-inv"></h2><p>المخزون</p></div>
+        <div class="card-title"><span class="dot" style="background:var(--teal)"></span>المخزون</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>كود</th><th>الصنف</th><th>الفئة</th><th>الكمية</th><th>الحد الأدنى</th><th>تكلفة الوحدة</th><th>سعر البيع</th><th>القيمة الكلية</th><th>الحالة</th><th class="no-print">إجراءات</th></tr></thead>
+            <tbody id="inventory-body"><tr><td colspan="10"><div class="empty-state"><div class="empty-icon">🗃️</div><p>أضف أصناف</p></div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== العملاء ==================== -->
+    <div class="page" id="page-customers">
+      <div class="flex items-center justify-between mb-16 no-print">
+        <div></div>
+        <button class="btn btn-success" onclick="openContactModal('customer')">+ عميل جديد</button>
+      </div>
+      <div class="card">
+        <div class="print-page-header"><h2 id="pph-cust"></h2><p>سجل العملاء</p></div>
+        <div class="card-title"><span class="dot" style="background:var(--green)"></span>سجل العملاء</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>الاسم</th><th>الهاتف</th><th>البريد</th><th>الرصيد المستحق</th><th>إجمالي المبيعات</th><th>عدد الفواتير</th><th class="no-print">إجراءات</th></tr></thead>
+            <tbody id="customers-body"><tr><td colspan="7"><div class="empty-state"><div class="empty-icon">👤</div><p>أضف أول عميل</p></div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== الموردون ==================== -->
+    <div class="page" id="page-suppliers">
+      <div class="flex items-center justify-between mb-16 no-print">
+        <div></div>
+        <button class="btn btn-primary" onclick="openContactModal('supplier')">+ مورد جديد</button>
+      </div>
+      <div class="card">
+        <div class="print-page-header"><h2 id="pph-supp"></h2><p>سجل الموردين</p></div>
+        <div class="card-title"><span class="dot" style="background:var(--accent)"></span>سجل الموردين</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>الاسم</th><th>الهاتف</th><th>البريد</th><th>الرصيد المستحق</th><th>إجمالي المشتريات</th><th>عدد الفواتير</th><th class="no-print">إجراءات</th></tr></thead>
+            <tbody id="suppliers-body"><tr><td colspan="7"><div class="empty-state"><div class="empty-icon">🏭</div><p>أضف أول مورد</p></div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== شجرة الحسابات ==================== -->
+    <div class="page" id="page-accounts">
+      <div class="flex items-center justify-between mb-16 no-print">
+        <div></div>
+        <button class="btn btn-primary" onclick="openAccountModal()">+ حساب جديد</button>
+      </div>
+      <div class="card">
+        <div class="print-page-header"><h2 id="pph-acc"></h2><p>شجرة الحسابات</p></div>
+        <div class="card-title"><span class="dot"></span>شجرة الحسابات (هرمي)</div>
+        <div class="table-wrap">
+          <table id="accounts-table">
+            <thead><tr><th>رقم الحساب</th><th>اسم الحساب</th><th>النوع</th><th>الطبيعة</th><th>الرصيد الحالي</th><th class="no-print">إجراءات</th></tr></thead>
+            <tbody id="accounts-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== التقارير ==================== -->
+    <div class="page" id="page-reports">
+      <div class="card">
+        <div class="print-page-header"><h2 id="pph-rep"></h2><p>التقارير المالية</p></div>
+        <div class="card-title"><span class="dot"></span>التقارير المالية</div>
+        <div class="tabs no-print">
+          <button class="tab-btn active"  onclick="switchTab(this,'rep-aging')">العمر الزمني</button>
+          <button class="tab-btn" onclick="switchTab(this,'rep-movements')">حركات الحسابات</button>
+          <button class="tab-btn" onclick="switchTab(this,'rep-account')">تقرير الحساب</button>
+          <button class="tab-btn" onclick="switchTab(this,'rep-profit')">الأرباح والخسائر</button>
+          <button class="tab-btn" onclick="switchTab(this,'rep-inventory')">تقرير المخزون</button>
+        </div>
+        <div class="tab-content active" id="rep-aging">
+          <h4 style="font-size:12.5px;color:var(--text2);margin-bottom:10px">ذمم مدينة - تحليل العمر الزمني</h4>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>العميل</th><th>أقل 30 يوم</th><th>30-60 يوم</th><th>60-90 يوم</th><th>+90 يوم</th><th>الإجمالي</th></tr></thead>
+              <tbody id="aging-body"><tr><td colspan="6"><div class="empty-state"><p>لا بيانات</p></div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="tab-content" id="rep-movements">
+          <div class="form-grid mb-16 no-print" style="max-width:480px">
+            <div class="form-group"><label>من تاريخ</label><input type="date" id="rep-from"></div>
+            <div class="form-group"><label>إلى تاريخ</label><input type="date" id="rep-to"></div>
+          </div>
+          <button class="btn btn-ghost btn-sm no-print" onclick="generateMovementsReport()">🔍 استعراض</button>
+          <div id="movements-report" style="margin-top:12px"></div>
+        </div>
+        <!-- تبويب تقرير الحساب -->
+        <div class="tab-content" id="rep-account">
+          <!-- فلتر التقرير (مخفي عند الطباعة) -->
+          <div class="no-print" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px">
+            <div class="form-grid form-grid-3" style="margin-bottom:12px">
+              <div class="form-group">
+                <label>نوع التقرير</label>
+                <select id="racc-type" onchange="onRaccTypeChange()">
+                  <option value="">-- اختر النوع --</option>
+                  <option value="customer">عملاء</option>
+                  <option value="supplier">موردون</option>
+                  <option value="account">حساب محدد</option>
+                </select>
+              </div>
+              <div class="form-group" id="racc-detail-wrap">
+                <label id="racc-detail-label">الاختيار</label>
+                <select id="racc-detail">
+                  <option value="">-- اختر أولاً --</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>عرض</label>
+                <select id="racc-scope">
+                  <option value="all">الكل</option>
+                  <option value="debit">المدين فقط</option>
+                  <option value="credit">الدائن فقط</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-grid" style="max-width:480px;margin-bottom:12px">
+              <div class="form-group"><label>من تاريخ</label><input type="date" id="racc-from"></div>
+              <div class="form-group"><label>إلى تاريخ</label><input type="date" id="racc-to"></div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="generateAccountReport()">🔍 استعراض التقرير</button>
+          </div>
+          <!-- نتيجة التقرير -->
+          <div id="account-report-result"></div>
+        </div>
+
+        <div class="tab-content" id="rep-profit">
+          <div id="profit-report"></div>
+          <button class="btn btn-ghost btn-sm mt-12 no-print" onclick="renderProfitReport()">🔄 تحديث</button>
+        </div>
+        <div class="tab-content" id="rep-inventory">
+          <h4 style="font-size:12.5px;color:var(--text2);margin-bottom:10px">تقرير قيمة المخزون</h4>
+          <div id="inventory-report"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== الإعدادات ==================== -->
+    <div class="page" id="page-settings">
+      <div class="card">
+        <div class="card-title"><span class="dot"></span>إعدادات الشركة والنظام</div>
+        <div class="settings-section">
+          <h3>بيانات الشركة</h3>
+          <div class="form-grid form-grid-3">
+            <div class="form-group"><label>اسم الشركة</label><input type="text" id="set-company" placeholder="اسم شركتك"></div>
+            <div class="form-group"><label>رقم السجل التجاري</label><input type="text" id="set-cr"></div>
+            <div class="form-group"><label>الرقم الضريبي</label><input type="text" id="set-tax-no"></div>
+            <div class="form-group"><label>العنوان</label><input type="text" id="set-address"></div>
+            <div class="form-group"><label>الهاتف</label><input type="text" id="set-phone"></div>
+            <div class="form-group"><label>البريد الإلكتروني</label><input type="email" id="set-email"></div>
+          </div>
+        </div>
+        <div class="settings-section">
+          <h3>إعدادات المحاسبة</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>العملة</label>
+              <select id="set-currency">
+                <option value="SAR">ريال سعودي (SAR)</option>
+                <option value="AED">درهم إماراتي (AED)</option>
+                <option value="KWD">دينار كويتي (KWD)</option>
+                <option value="USD">دولار أمريكي (USD)</option>
+              </select>
+            </div>
+            <div class="form-group"><label>نسبة ضريبة القيمة المضافة (%)</label><input type="number" id="set-vat" value="15" min="0" max="100"></div>
+          </div>
+        </div>
+        <div class="settings-section">
+          <h3>إدارة البيانات</h3>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-ghost" onclick="exportAllData()">📤 تصدير JSON</button>
+            <button class="btn btn-ghost" onclick="document.getElementById('import-file').click()">📥 استيراد</button>
+            <input type="file" id="import-file" style="display:none" accept=".json" onchange="importData(event)">
+            <button class="btn btn-danger" onclick="clearAllData()">🗑️ حذف كل البيانات</button>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="saveSettings()">💾 حفظ الإعدادات</button>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ==================== النوافذ المنبثقة (Modals) ==================== -->
+
+<!-- نافذة القيد اليومي -->
+<div class="modal-overlay" id="journal-modal">
+  <div class="modal" style="max-width:840px">
+    <div class="modal-header">
+      <h3 id="journal-modal-title">قيد يومي جديد</h3>
+      <button class="modal-close" onclick="closeModal('journal-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid form-grid-3" style="margin-bottom:12px">
+        <div class="form-group"><label>رقم القيد</label><input type="text" id="j-number" placeholder="تلقائي"></div>
+        <div class="form-group"><label>التاريخ *</label><input type="date" id="j-date"></div>
+        <div class="form-group"><label>مرجع</label><input type="text" id="j-ref" placeholder="رقم الفاتورة..."></div>
+      </div>
+      <div class="form-group" style="margin-bottom:12px">
+        <label>البيان *</label>
+        <input type="text" id="j-desc" placeholder="وصف القيد المحاسبي">
+      </div>
+      <div id="j-auto-note" style="display:none;padding:7px 12px;background:var(--accent-glow);border-radius:7px;font-size:11.5px;color:var(--accent2);margin-bottom:10px;border:1px solid var(--accent)">
+        ⚡ قيد تلقائي مولّد من فاتورة — يمكن التعديل
+      </div>
+      <div style="font-size:11.5px;color:var(--text2);font-weight:700;margin-bottom:5px">بنود القيد</div>
+      <table class="entry-lines-table">
+        <thead><tr><th style="width:38%">الحساب</th><th>البيان الفرعي</th><th style="width:14%">مدين</th><th style="width:14%">دائن</th><th style="width:36px"></th></tr></thead>
+        <tbody id="j-lines"></tbody>
+      </table>
+      <button class="btn btn-ghost btn-sm mt-12" onclick="addJournalLine()">+ سطر</button>
+      <div id="j-balance-status" class="balance-indicator" style="display:none"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('journal-modal')">إلغاء</button>
+      <button class="btn btn-primary" onclick="saveJournalEntry()">💾 حفظ القيد</button>
+    </div>
+  </div>
+</div>
+
+<!-- نافذة الحساب -->
+<div class="modal-overlay" id="account-modal">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-header">
+      <h3 id="account-modal-title">حساب جديد</h3>
+      <button class="modal-close" onclick="closeModal('account-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group"><label>رقم الحساب *</label><input type="text" id="acc-code" placeholder="مثال: 1010"></div>
+        <div class="form-group"><label>اسم الحساب *</label><input type="text" id="acc-name"></div>
+        <div class="form-group">
+          <label>نوع الحساب *</label>
+          <select id="acc-type">
+            <option value="asset">أصول</option>
+            <option value="liability">خصوم</option>
+            <option value="equity">حقوق ملكية</option>
+            <option value="revenue">إيرادات</option>
+            <option value="expense">مصروفات</option>
+            <option value="cogs">تكلفة مبيعات</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>التصنيف</label>
+          <select id="acc-subtype">
+            <option value="current">متداول / جاري</option>
+            <option value="fixed">ثابت / طويل الأجل</option>
+            <option value="operating">تشغيلي</option>
+          </select>
+        </div>
+        <div class="form-group"><label>الحساب الأب (اختياري)</label><select id="acc-parent"><option value="">— بدون أب (رئيسي) —</option></select></div>
+        <div class="form-group"><label>الرصيد الافتتاحي</label><input type="number" id="acc-opening" value="0"></div>
+        <div class="form-group col-span-2"><label>ملاحظات</label><input type="text" id="acc-notes" placeholder="اختياري"></div>
+        <div class="form-group col-span-2" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;flex-direction:row;align-items:center;gap:10px">
+          <input type="checkbox" id="acc-is-payment" style="width:16px;height:16px;cursor:pointer;accent-color:var(--teal)">
+          <label for="acc-is-payment" style="cursor:pointer;font-size:12.5px;color:var(--text);margin:0">
+            💳 <strong>حساب دفع</strong> — يظهر في قائمة الدفع عند إنشاء الفواتير
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('account-modal')">إلغاء</button>
+      <button class="btn btn-primary" onclick="saveAccount()">💾 حفظ</button>
+    </div>
+  </div>
+</div>
+
+<!-- نافذة الفاتورة -->
+<div class="modal-overlay" id="invoice-modal">
+  <div class="modal" style="max-width:860px">
+    <div class="modal-header">
+      <h3 id="invoice-modal-title">فاتورة جديدة</h3>
+      <button class="modal-close" onclick="closeModal('invoice-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid form-grid-3" style="margin-bottom:12px">
+        <div class="form-group"><label>رقم الفاتورة</label><input type="text" id="inv-number"></div>
+        <div class="form-group"><label>التاريخ *</label><input type="date" id="inv-date"></div>
+        <div class="form-group">
+          <label id="inv-party-label">العميل *</label>
+          <div style="display:flex;gap:6px;align-items:stretch">
+            <select id="inv-party-select" onchange="onPartySelect()" style="flex:1"><option value="">-- اختر أو اكتب --</option></select>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="quickAddContact()" title="إضافة عميل/مورد جديد" style="flex-shrink:0;padding:7px 11px;font-size:16px;line-height:1">＋</button>
+          </div>
+        </div>
+      </div>
+      <div class="form-grid" style="margin-bottom:12px">
+        <div class="form-group">
+          <label>طريقة الدفع</label>
+          <select id="inv-payment">
+            <option value="cash">نقدي</option>
+            <option value="credit">آجل</option>
+            <option value="bank">تحويل بنكي</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>حساب الدفع 💳</label>
+          <select id="inv-pay-account">
+            <option value="">-- اختر حساب الدفع --</option>
+          </select>
+        </div>
+        <div class="form-group col-span-2"><label>ملاحظات</label><input type="text" id="inv-notes" placeholder="اختياري"></div>
+      </div>
+      <div class="invoice-items-wrap">
+        <table class="entry-lines-table">
+          <thead><tr><th>الصنف / الخدمة</th><th style="width:80px">الكمية</th><th style="width:110px">سعر الوحدة</th><th style="width:80px">خصم %</th><th style="width:110px">الإجمالي</th><th style="width:36px"></th></tr></thead>
+          <tbody id="inv-lines"></tbody>
+        </table>
+      </div>
+      <button class="btn btn-ghost btn-sm mt-12" onclick="addInvoiceLine()">+ صنف</button>
+      <div class="invoice-totals">
+        <div class="inv-total-row"><span>المجموع قبل الضريبة</span><span id="inv-subtotal">0.00</span></div>
+        <div class="inv-total-row"><span id="inv-vat-label">ضريبة القيمة المضافة (15%)</span><span id="inv-vat-amount">0.00</span></div>
+        <div class="inv-total-row"><span>الإجمالي شامل الضريبة</span><span id="inv-total">0.00</span></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('invoice-modal')">إلغاء</button>
+      <button class="btn btn-primary" onclick="saveInvoice()">💾 حفظ الفاتورة</button>
+    </div>
+  </div>
+</div>
+
+<!-- نافذة معاينة الفاتورة للطباعة -->
+<div class="modal-overlay" id="invoice-print-modal">
+  <div class="modal" style="max-width:700px">
+    <div class="modal-header">
+      <h3>معاينة الفاتورة</h3>
+      <button class="modal-close" onclick="closeModal('invoice-print-modal')">✕</button>
+    </div>
+    <div class="modal-body" id="invoice-print-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('invoice-print-modal')">إغلاق</button>
+      <button class="btn btn-print" onclick="printInvoiceOnly()">🖨️ طباعة / PDF</button>
+    </div>
+  </div>
+</div>
+
+<!-- نافذة إضافة عميل/مورد سريع -->
+<div class="modal-overlay" id="quick-contact-modal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <h3 id="qc-title">إضافة عميل سريع</h3>
+      <button class="modal-close" onclick="closeModal('quick-contact-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group"><label>الاسم *</label><input type="text" id="qc-name" placeholder="اسم العميل أو المورد"></div>
+        <div class="form-group"><label>رقم الهاتف</label><input type="text" id="qc-phone"></div>
+        <div class="form-group col-span-2"><label>الرقم الضريبي</label><input type="text" id="qc-taxno" placeholder="اختياري"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('quick-contact-modal')">إلغاء</button>
+      <button class="btn btn-primary" onclick="saveQuickContact()">✓ إضافة وتحديد</button>
+    </div>
+  </div>
+</div>
+
+<!-- نافذة الصنف (المخزون) -->
+<div class="modal-overlay" id="inventory-modal">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-header">
+      <h3 id="inventory-modal-title">صنف مخزون جديد</h3>
+      <button class="modal-close" onclick="closeModal('inventory-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group"><label>كود الصنف *</label><input type="text" id="inv-code" placeholder="PRD001"></div>
+        <div class="form-group"><label>اسم الصنف *</label><input type="text" id="inv-name-f"></div>
+        <div class="form-group"><label>الفئة</label><input type="text" id="inv-cat"></div>
+        <div class="form-group">
+          <label>وحدة القياس</label>
+          <select id="inv-unit">
+            <option>قطعة</option><option>كيلو</option><option>لتر</option><option>متر</option><option>صندوق</option>
+          </select>
+        </div>
+        <div class="form-group"><label>الكمية الحالية</label><input type="number" id="inv-qty" value="0" min="0"></div>
+        <div class="form-group"><label>الحد الأدنى</label><input type="number" id="inv-min" value="5" min="0"></div>
+        <div class="form-group"><label>تكلفة الوحدة</label><input type="number" id="inv-cost" value="0" step="0.01"></div>
+        <div class="form-group"><label>سعر بيع الوحدة</label><input type="number" id="inv-price" value="0" step="0.01"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('inventory-modal')">إلغاء</button>
+      <button class="btn btn-primary" onclick="saveInventoryItem()">💾 حفظ</button>
+    </div>
+  </div>
+</div>
+
+<!-- نافذة العميل / المورد -->
+<div class="modal-overlay" id="contact-modal">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-header">
+      <h3 id="contact-modal-title">عميل جديد</h3>
+      <button class="modal-close" onclick="closeModal('contact-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group"><label>الاسم *</label><input type="text" id="ct-name"></div>
+        <div class="form-group"><label>رقم الهاتف</label><input type="text" id="ct-phone"></div>
+        <div class="form-group"><label>البريد الإلكتروني</label><input type="email" id="ct-email"></div>
+        <div class="form-group"><label>الرقم الضريبي</label><input type="text" id="ct-taxno"></div>
+        <div class="form-group"><label>العنوان</label><input type="text" id="ct-address"></div>
+        <div class="form-group"><label>حد الائتمان</label><input type="number" id="ct-credit" value="0" min="0"></div>
+        <div class="form-group col-span-2"><label>ملاحظات</label><textarea id="ct-notes" rows="2"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('contact-modal')">إلغاء</button>
+      <button class="btn btn-primary" onclick="saveContact()">💾 حفظ</button>
+    </div>
+  </div>
+</div>
+
+<!-- إشعار التوست -->
+<div id="toast"></div>
+
+<!-- ==================== ملفات JavaScript (بالترتيب) ==================== -->
+<!-- 1. الحالة والتخزين (يجب أن يُحمَّل أولاً) -->
+<script src="js/state.js"></script>
+<!-- 2. الدوال المساعدة العامة -->
+<script src="js/helpers.js"></script>
+<!-- 3. شجرة الحسابات والأرصدة -->
+<script src="js/accounts.js"></script>
+<!-- 4. القيود اليومية -->
+<script src="js/journal.js"></script>
+<!-- 5. دفتر الأستاذ والقوائم المالية -->
+<script src="js/ledger.js"></script>
+<!-- 6. الفواتير (مبيعات ومشتريات) -->
+<script src="js/invoices.js"></script>
+<!-- 7. المخزون -->
+<script src="js/inventory.js"></script>
+<!-- 8. العملاء والموردون -->
+<script src="js/contacts.js"></script>
+<!-- 9. التقارير ولوحة التحكم -->
+<script src="js/reports.js"></script>
+<!-- 10. الإعدادات -->
+<script src="js/settings.js"></script>
+<!-- 11. نقطة البداية الرئيسية (يجب أن يُحمَّل أخيراً) -->
+<script src="js/app.js"></script>
+
+</body>
+</html>
