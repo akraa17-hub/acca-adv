@@ -18,6 +18,7 @@ function updateAll() {
   renderCF();
   renderSales();
   renderPurchases();
+  renderReceipts();
   renderInventory();
   renderCustomers();
   renderSuppliers();
@@ -25,6 +26,7 @@ function updateAll() {
   renderProfitReport();
   renderInventoryReport();
   renderAgingReport();
+  renderReceipts();
   updateLedgerFilter();
   updateAccountParentSelects();
   document.getElementById('is-company').textContent = S.settings.company;
