@@ -21,8 +21,10 @@ let S = {
   accounts:       [],
   journalEntries: [],
   invoices:       [],
+  receipts:       [],   // سندات القبض والصرف
   inventory:      [],
   contacts:       [],
+  receipts:       [],
   _edit:      null,
   _editId:    null,
   _invType:   'sale',
@@ -39,8 +41,10 @@ async function save() {
       accounts:       S.accounts,
       journalEntries: S.journalEntries,
       invoices:       S.invoices,
+      receipts:       S.receipts,
       inventory:      S.inventory,
       contacts:       S.contacts,
+      receipts:       S.receipts,
       updatedAt:      firebase.firestore.FieldValue.serverTimestamp()
     };
     await ref.set(toSave, { merge: true });
@@ -62,8 +66,10 @@ async function load() {
       S.accounts       = data.accounts       || [];
       S.journalEntries = data.journalEntries || [];
       S.invoices       = data.invoices       || [];
+      S.receipts       = data.receipts       || [];
       S.inventory      = data.inventory      || [];
       S.contacts       = data.contacts       || [];
+      S.receipts       = data.receipts       || [];
     }
   } catch (e) {
     console.error('خطأ في التحميل:', e);
@@ -71,26 +77,32 @@ async function load() {
   }
 }
 
+/* ===== تحميل القالب الافتراضي من Firestore ===== */
+async function loadTemplate() {
+  try {
+    const doc = await db.collection('templates').doc('default').get();
+    if (doc.exists && (doc.data().accounts || []).length > 0) {
+      S.accounts = doc.data().accounts;
+      await save();
+      return true; // تم تحميل القالب
+    }
+  } catch(e) {
+    console.warn('لم يُوجد قالب في Firestore، سيُستخدم الافتراضي:', e);
+  }
+  return false; // لم يُوجد قالب
+}
+
 /* ===== البيانات الافتراضية لشجرة الحسابات ===== */
 function seedAccounts() {
   const raw = [
     { code: '1',      name: 'الأصول',                            type: 'asset',     subtype: 'current',   level: 0, parentCode: null },
     { code: '101',    name: 'الأصول المتداولة',                   type: 'asset',     subtype: 'current',   level: 1, parentCode: '1' },
-    { code: '1010',   name: 'النقدية',                 type: 'asset',     subtype: 'current',   level: 2, parentCode: '101' },
-    { code: '10101',   name: 'البنك الأهلي',                             type: 'asset',     subtype: 'current',   level: 3, parentCode: '1010' },
-    { code: '10102',   name: 'الخزينة الرئيسية',                             type: 'asset',     subtype: 'current',   level: 3, parentCode: '1010' },
+    { code: '1010',   name: 'الصندوق / النقدية',                 type: 'asset',     subtype: 'current',   level: 2, parentCode: '101' },
+    { code: '1020',   name: 'البنك',                             type: 'asset',     subtype: 'current',   level: 2, parentCode: '101' },
     { code: '1030',   name: 'العملاء / الذمم المدينة',           type: 'asset',     subtype: 'current',   level: 2, parentCode: '101' },
     { code: '1040',   name: 'المخزون',                           type: 'asset',     subtype: 'current',   level: 2, parentCode: '101' },
     { code: '102',    name: 'الأصول الثابتة',                    type: 'asset',     subtype: 'fixed',     level: 1, parentCode: '1' },
-    
-{ code: '10201', name: 'المباني والإنشاءات',  type: 'asset', subtype: 'fixed', level: 2, parentCode: '102' },
-{ code: '10202', name: 'الآلات والمعدات',     type: 'asset', subtype: 'fixed', level: 2, parentCode: '102' },
-{ code: '10203', name: 'وسائل النقل والاتقال', type: 'asset', subtype: 'fixed', level: 2, parentCode: '102' },
-
-
-
-
-     
+    { code: '1510',   name: 'الأصول الثابتة',                    type: 'asset',     subtype: 'fixed',     level: 2, parentCode: '102' },
     { code: '2',      name: 'الخصوم',                            type: 'liability', subtype: 'current',   level: 0, parentCode: null },
     { code: '201',    name: 'الخصوم المتداولة',                  type: 'liability', subtype: 'current',   level: 1, parentCode: '2' },
     { code: '2010',   name: 'الموردون / الذمم الدائنة',          type: 'liability', subtype: 'current',   level: 2, parentCode: '201' },
