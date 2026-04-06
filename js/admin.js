@@ -19,38 +19,38 @@ async function loadAdminPanel() {
   try {
     // جلب بيانات كل المستخدمين من users/{uid}/data/state مباشرة
     const usersSnapshot = await db.collection('users').get();
+    console.log('عدد المستخدمين:', usersSnapshot.size);
 
-    const users   = [];
-    const promises = [];
+    const users = [];
 
-    usersSnapshot.forEach(userDoc => {
+    for (const userDoc of usersSnapshot.docs) {
       const uid = userDoc.id;
-      const p   = db.collection('users')
-                    .doc(uid)
-                    .collection('data')
-                    .doc('state')
-                    .get()
-                    .then(stateDoc => {
-                      if (!stateDoc.exists) return;
-                      const data = stateDoc.data();
-                      users.push({
-                        uid,
-                        email:     data.userEmail || '(UID: ' + uid.substring(0,8) + '...)',
-                        company:   data.settings?.company  || '—',
-                        entries:   (data.journalEntries    || []).length,
-                        invoices:  (data.invoices           || []).length,
-                        accounts:  (data.accounts           || []).length,
-                        contacts:  (data.contacts           || []).length,
-                        inventory: (data.inventory          || []).length,
-                        updatedAt: data.updatedAt?.toDate?.()
-                                     ?.toLocaleDateString('ar-SA') || '—',
-                      });
-                    })
-                    .catch(err => console.warn('خطأ في جلب بيانات:', uid, err));
-      promises.push(p);
-    });
-
-    await Promise.all(promises);
+      console.log('جاري جلب بيانات:', uid);
+      try {
+        const stateDoc = await db.collection('users')
+                                  .doc(uid)
+                                  .collection('data')
+                                  .doc('state')
+                                  .get();
+        console.log('state موجود؟', stateDoc.exists, 'للمستخدم:', uid);
+        if (!stateDoc.exists) continue;
+        const data = stateDoc.data();
+        users.push({
+          uid,
+          email:     data.userEmail || '(UID: ' + uid.substring(0,8) + '...)',
+          company:   data.settings?.company  || '—',
+          entries:   (data.journalEntries    || []).length,
+          invoices:  (data.invoices          || []).length,
+          accounts:  (data.accounts          || []).length,
+          contacts:  (data.contacts          || []).length,
+          inventory: (data.inventory         || []).length,
+          updatedAt: data.updatedAt?.toDate?.()?.toLocaleDateString('ar-SA') || '—',
+        });
+      } catch(err) {
+        console.error('خطأ في جلب بيانات المستخدم:', uid, err);
+      }
+    }
+    console.log('المستخدمون المجلوبون:', users.length);
 
     renderAdminStats(users);
     renderAdminUsersList(users);
