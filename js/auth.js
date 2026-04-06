@@ -29,6 +29,10 @@ auth.onAuthStateChanged(async (user) => {
     const emailEl = document.getElementById('user-email');
     if (emailEl) emailEl.textContent = user.email;
 
+    // حفظ البريد الإلكتروني في Firestore (لعرضه في لوحة الأدمن)
+    const ref = getUserDocRef();
+    if (ref) await ref.set({ userEmail: user.email }, { merge: true });
+
     // تحميل بيانات المستخدم من Firestore
     await load();
 
