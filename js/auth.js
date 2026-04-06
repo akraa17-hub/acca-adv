@@ -6,12 +6,25 @@ auth.onAuthStateChanged(async (user) => {
   if (user) {
     document.getElementById('auth-screen').style.display = 'none';
 
-    // أدمن
+    // أدمن — يفتح لوحة الأدمن افتراضياً
     if (user.email === ADMIN_EMAIL) {
-      document.getElementById('app-screen').style.display   = 'none';
-      document.getElementById('admin-screen').style.display = 'block';
       document.getElementById('admin-user-email').textContent = user.email;
-      await loadAdminPanel();
+      // تحميل بيانات الأدمن أيضاً (للتطبيق)
+      await load();
+      if (!S.accounts || S.accounts.length === 0) {
+        const templateLoaded = await loadTemplate();
+        if (!templateLoaded) seedAccounts();
+      }
+      if (!S.contacts) S.contacts = [];
+      updateAll(); setToday(); loadSettings();
+      if (window.innerWidth <= 768) { sidebarOpen = false; applySidebar(); }
+      document.querySelectorAll('.modal-overlay').forEach(overlay => {
+        overlay.addEventListener('click', e => {
+          if (e.target === overlay) overlay.classList.remove('open');
+        });
+      });
+      // افتح لوحة الأدمن افتراضياً
+      switchToAdmin();
       return;
     }
 
@@ -21,6 +34,10 @@ auth.onAuthStateChanged(async (user) => {
 
     const emailEl = document.getElementById('user-email');
     if (emailEl) emailEl.textContent = user.email;
+
+    // إظهار زر لوحة الأدمن فقط لحساب الأدمن
+    const adminBtn = document.getElementById('btn-switch-admin');
+    if (adminBtn && user.email === ADMIN_EMAIL) adminBtn.style.display = 'inline-flex';
 
     // تسجيل المستخدم في usersList (للأدمن)
     try {
@@ -153,3 +170,16 @@ document.addEventListener('keydown', e => {
     if (mode === 'login') signIn(); else signUp();
   }
 });
+
+/* ===== التبديل بين لوحة الأدمن والتطبيق ===== */
+function switchToAdmin() {
+  document.getElementById('app-screen').style.display   = 'none';
+  document.getElementById('admin-screen').style.display = 'block';
+  loadAdminPanel();
+}
+
+function switchToApp() {
+  document.getElementById('admin-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display   = 'block';
+  updateAll();
+}
