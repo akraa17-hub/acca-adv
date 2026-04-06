@@ -493,6 +493,8 @@ function renderSales() {
       <td class="fw-800 text-green">${fmt(i.total)}</td>
       <td><span class="badge badge-green">${i.status}</span></td>
       <td class="no-print"><div class="td-actions">
+        ${i.payment === 'credit' && i.status !== 'مسدد' ? `
+        <button class="btn btn-success btn-sm" title="تحصيل / سند قبض" onclick="showReceiptOptions('${i.id}')">💰</button>` : ''}
         <button class="btn btn-ghost btn-sm" title="طباعة" onclick="printInvoice('${i.id}')">🖨️</button>
         <button class="btn btn-ghost btn-sm" onclick="openInvoiceModal('sale','${i.id}')">✏️</button>
         <button class="btn btn-danger btn-sm" onclick="deleteInvoice('${i.id}')">🗑</button>
@@ -520,9 +522,42 @@ function renderPurchases() {
       <td class="fw-800 text-red">${fmt(i.total)}</td>
       <td><span class="badge badge-blue">${i.status}</span></td>
       <td class="no-print"><div class="td-actions">
+        ${i.payment === 'credit' && i.status !== 'مسدد' ? `
+        <button class="btn btn-primary btn-sm" title="دفع / سند دفع" onclick="showReceiptOptions('${i.id}')">💸</button>` : ''}
         <button class="btn btn-ghost btn-sm" title="طباعة" onclick="printInvoice('${i.id}')">🖨️</button>
         <button class="btn btn-ghost btn-sm" onclick="openInvoiceModal('purchase','${i.id}')">✏️</button>
         <button class="btn btn-danger btn-sm" onclick="deleteInvoice('${i.id}')">🗑</button>
       </div></td>
     </tr>`).join('');
+}
+
+/* ===== خيارات السند عند الضغط على أيقونة التحصيل/الدفع ===== */
+function showReceiptOptions(invoiceId) {
+  const inv       = S.invoices.find(i => i.id === invoiceId);
+  if (!inv) return;
+  const isReceipt = inv.type === 'sale';
+  const type      = isReceipt ? 'receipt' : 'payment';
+  const unlinked  = (S.receipts || []).filter(r => r.type === type && !r.invoiceId);
+
+  // إذا لا توجد سندات سابقة → افتح نموذج سند جديد مباشرة
+  if (!unlinked.length) {
+    openReceiptModal(type, invoiceId);
+    return;
+  }
+
+  // إذا توجد سندات سابقة → اسأل المستخدم
+  const choice = confirm(
+    `يوجد ${unlinked.length} سند ${isReceipt ? 'قبض' : 'دفع'} غير مربوط.
+
+` +
+    `اضغط "موافق" لإنشاء سند جديد
+` +
+    `اضغط "إلغاء" لاختيار سند سابق`
+  );
+
+  if (choice) {
+    openReceiptModal(type, invoiceId);
+  } else {
+    openLinkReceiptModal(invoiceId);
+  }
 }
