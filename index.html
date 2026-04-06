@@ -165,7 +165,10 @@
   <div class="sidebar-section-title">المبيعات والمشتريات</div>
   <div class="nav-item" onclick="navigate('sales')"><span class="nav-icon">🧾</span> فواتير المبيعات</div>
   <div class="nav-item" onclick="navigate('purchases')"><span class="nav-icon">📦</span> فواتير المشتريات</div>
+  <div class="nav-item" onclick="navigate('receipts')"><span class="nav-icon">💰</span> سندات القبض والدفع</div>
   <div class="nav-item" onclick="navigate('inventory')"><span class="nav-icon">🗃️</span> المخزون</div>
+  <div class="nav-item" onclick="navigate('receipts')"><span class="nav-icon">💰</span> سندات القبض</div>
+  <div class="nav-item" onclick="navigate('payments')"><span class="nav-icon">💸</span> سندات الصرف</div>
 
   <div class="sidebar-section-title">العملاء والموردون</div>
   <div class="nav-item" onclick="navigate('customers')"><span class="nav-icon">👤</span> العملاء</div>
@@ -457,6 +460,36 @@
       </div>
     </div>
 
+    <!-- ==================== سندات القبض والدفع ==================== -->
+    <div class="page" id="page-receipts">
+      <div class="flex items-center justify-between mb-16 no-print">
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-success" onclick="openReceiptModal('receipt')">+ سند قبض</button>
+          <button class="btn btn-primary" onclick="openReceiptModal('payment')">+ سند دفع</button>
+        </div>
+      </div>
+      <!-- سندات القبض -->
+      <div class="card">
+        <div class="card-title"><span class="dot" style="background:var(--green)"></span>سندات القبض</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>رقم السند</th><th>التاريخ</th><th>العميل</th><th>حساب القبض</th><th>المبلغ</th><th>الفاتورة</th><th class="no-print">إجراءات</th></tr></thead>
+            <tbody id="receipts-body"><tr><td colspan="7"><div class="empty-state"><div class="empty-icon">💰</div><p>لا سندات قبض</p></div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+      <!-- سندات الدفع -->
+      <div class="card">
+        <div class="card-title"><span class="dot" style="background:var(--accent)"></span>سندات الدفع</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>رقم السند</th><th>التاريخ</th><th>المورد</th><th>حساب الدفع</th><th>المبلغ</th><th>الفاتورة</th><th class="no-print">إجراءات</th></tr></thead>
+            <tbody id="payments-body"><tr><td colspan="7"><div class="empty-state"><div class="empty-icon">💸</div><p>لا سندات دفع</p></div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
     <!-- ==================== المخزون ==================== -->
     <div class="page" id="page-inventory">
       <div class="flex items-center justify-between mb-16 no-print">
@@ -470,6 +503,40 @@
           <table>
             <thead><tr><th>كود</th><th>الصنف</th><th>الفئة</th><th>الكمية</th><th>الحد الأدنى</th><th>تكلفة الوحدة</th><th>سعر البيع</th><th>القيمة الكلية</th><th>الحالة</th><th class="no-print">إجراءات</th></tr></thead>
             <tbody id="inventory-body"><tr><td colspan="10"><div class="empty-state"><div class="empty-icon">🗃️</div><p>أضف أصناف</p></div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== سندات القبض ==================== -->
+    <div class="page" id="page-receipts">
+      <div class="flex items-center justify-between mb-16 no-print">
+        <div></div>
+        <button class="btn btn-success" onclick="openReceiptModal('receipt')">+ سند قبض جديد</button>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="dot" style="background:var(--green)"></span>سندات القبض</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>رقم السند</th><th>التاريخ</th><th>العميل</th><th>المبلغ</th><th>حساب الدفع</th><th>الفاتورة</th><th>ملاحظات</th><th class="no-print">إجراءات</th></tr></thead>
+            <tbody id="receipts-body"><tr><td colspan="8"><div class="empty-state"><div class="empty-icon">💰</div><p>لا سندات قبض</p></div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== سندات الصرف ==================== -->
+    <div class="page" id="page-payments">
+      <div class="flex items-center justify-between mb-16 no-print">
+        <div></div>
+        <button class="btn btn-primary" onclick="openReceiptModal('payment')">+ سند صرف جديد</button>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="dot" style="background:var(--red)"></span>سندات الصرف</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>رقم السند</th><th>التاريخ</th><th>المورد</th><th>المبلغ</th><th>حساب الدفع</th><th>الفاتورة</th><th>ملاحظات</th><th class="no-print">إجراءات</th></tr></thead>
+            <tbody id="payments-body"><tr><td colspan="8"><div class="empty-state"><div class="empty-icon">💸</div><p>لا سندات صرف</p></div></td></tr></tbody>
           </table>
         </div>
       </div>
@@ -904,6 +971,107 @@
   </div>
 </div>
 
+<!-- نافذة سند القبض / الدفع -->
+<div class="modal-overlay" id="receipt-modal">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-header">
+      <h3 id="receipt-modal-title">سند قبض جديد</h3>
+      <button class="modal-close" onclick="closeModal('receipt-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid form-grid-3" style="margin-bottom:12px">
+        <div class="form-group"><label>رقم السند</label><input type="text" id="rec-number"></div>
+        <div class="form-group"><label>التاريخ *</label><input type="date" id="rec-date"></div>
+        <div class="form-group"><label>المبلغ *</label><input type="number" id="rec-amount" min="0" step="0.01" placeholder="0.00"></div>
+      </div>
+      <div class="form-grid" style="margin-bottom:12px">
+        <div class="form-group">
+          <label>الطرف (عميل/مورد)</label>
+          <select id="rec-party"><option value="">-- اختر --</option></select>
+        </div>
+        <div class="form-group">
+          <label>حساب الدفع 💳 *</label>
+          <select id="rec-pay-account"><option value="">-- اختر حساب الدفع --</option></select>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:12px">
+        <label>ربط بفاتورة آجلة (اختياري)</label>
+        <select id="rec-invoice"><option value="">-- بدون ربط --</option></select>
+      </div>
+      <div class="form-group">
+        <label>ملاحظات</label>
+        <input type="text" id="rec-notes" placeholder="اختياري">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('receipt-modal')">إلغاء</button>
+      <button class="btn btn-primary" onclick="saveReceipt()">💾 حفظ السند</button>
+    </div>
+  </div>
+</div>
+
+<!-- نافذة ربط سند سابق بفاتورة -->
+<div class="modal-overlay" id="link-receipt-modal">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <h3>ربط سند سابق بالفاتورة</h3>
+      <button class="modal-close" onclick="closeModal('link-receipt-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="background:var(--surface2);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12.5px" id="link-receipt-inv-info"></div>
+      <div class="form-group">
+        <label>اختر السند</label>
+        <select id="link-receipt-select"><option value="">-- اختر سنداً --</option></select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('link-receipt-modal')">إلغاء</button>
+      <button class="btn btn-primary" onclick="saveLinkReceipt()">✓ ربط السند</button>
+    </div>
+  </div>
+</div>
+
+<!-- نافذة سند القبض / الصرف -->
+<div class="modal-overlay" id="receipt-modal">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-header">
+      <h3 id="receipt-modal-title">سند قبض جديد</h3>
+      <button class="modal-close" onclick="closeModal('receipt-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid form-grid-3" style="margin-bottom:12px">
+        <div class="form-group"><label>رقم السند</label><input type="text" id="rec-number"></div>
+        <div class="form-group"><label>التاريخ *</label><input type="date" id="rec-date"></div>
+        <div class="form-group"><label>المبلغ *</label><input type="number" id="rec-amount" min="0" step="0.01" placeholder="0.00"></div>
+      </div>
+      <div class="form-grid" style="margin-bottom:12px">
+        <div class="form-group">
+          <label id="rec-party-label">العميل</label>
+          <select id="rec-party-select"><option value="">-- اختر --</option></select>
+        </div>
+        <div class="form-group">
+          <label>حساب الدفع 💳 *</label>
+          <select id="rec-pay-account"><option value="">-- اختر حساب الدفع --</option></select>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:12px">
+        <label>ربط بفاتورة آجلة (اختياري)</label>
+        <select id="rec-invoice-select" onchange="onReceiptInvoiceSelect()">
+          <option value="">-- بدون فاتورة (سند مستقل) --</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>ملاحظات</label>
+        <input type="text" id="rec-notes" placeholder="اختياري">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('receipt-modal')">إلغاء</button>
+      <button class="btn btn-primary" onclick="saveReceipt()">💾 حفظ السند</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <!-- ==================== ملفات JavaScript (بالترتيب) ==================== -->
@@ -931,6 +1099,10 @@
 <script src="js/settings.js"></script>
 <!-- 11. نقطة البداية الرئيسية -->
 <script src="js/app.js"></script>
+<!-- 11b. سندات القبض والدفع -->
+<script src="js/receipts.js"></script>
+<!-- 11.5 سندات القبض والصرف -->
+<script src="js/receipts.js"></script>
 <!-- 12. لوحة الأدمن -->
 <script src="js/admin.js"></script>
 <!-- 13. المصادقة (يجب أن يُحمَّل أخيراً) -->
