@@ -9,9 +9,21 @@
 */
 auth.onAuthStateChanged(async (user) => {
   if (user) {
-    // المستخدم مسجّل الدخول
+    // إخفاء شاشة تسجيل الدخول
     document.getElementById('auth-screen').style.display = 'none';
-    document.getElementById('app-screen').style.display  = 'block';
+
+    // ===== هل هو أدمن؟ =====
+    if (user.email === ADMIN_EMAIL) {
+      document.getElementById('app-screen').style.display   = 'none';
+      document.getElementById('admin-screen').style.display = 'block';
+      document.getElementById('admin-user-email').textContent = user.email;
+      await loadAdminPanel();
+      return;
+    }
+
+    // ===== مستخدم عادي =====
+    document.getElementById('app-screen').style.display   = 'block';
+    document.getElementById('admin-screen').style.display = 'none';
 
     // عرض بريد المستخدم في الشريط العلوي
     const emailEl = document.getElementById('user-email');
@@ -35,8 +47,9 @@ auth.onAuthStateChanged(async (user) => {
 
   } else {
     // المستخدم غير مسجّل
-    document.getElementById('auth-screen').style.display = 'flex';
-    document.getElementById('app-screen').style.display  = 'none';
+    document.getElementById('auth-screen').style.display  = 'flex';
+    document.getElementById('app-screen').style.display   = 'none';
+    document.getElementById('admin-screen').style.display = 'none';
   }
 });
 
