@@ -76,12 +76,21 @@ function seedAccounts() {
   const raw = [
     { code: '1',      name: 'الأصول',                            type: 'asset',     subtype: 'current',   level: 0, parentCode: null },
     { code: '101',    name: 'الأصول المتداولة',                   type: 'asset',     subtype: 'current',   level: 1, parentCode: '1' },
-    { code: '1010',   name: 'الصندوق / النقدية',                 type: 'asset',     subtype: 'current',   level: 2, parentCode: '101' },
-    { code: '1020',   name: 'البنك',                             type: 'asset',     subtype: 'current',   level: 2, parentCode: '101' },
+    { code: '1010',   name: 'النقدية',                 type: 'asset',     subtype: 'current',   level: 2, parentCode: '101' },
+    { code: '10101',   name: 'البنك الأهلي',                             type: 'asset',     subtype: 'current',   level: 3, parentCode: '1010' },
+    { code: '10102',   name: 'الخزينة الرئيسية',                             type: 'asset',     subtype: 'current',   level: 3, parentCode: '1010' },
     { code: '1030',   name: 'العملاء / الذمم المدينة',           type: 'asset',     subtype: 'current',   level: 2, parentCode: '101' },
     { code: '1040',   name: 'المخزون',                           type: 'asset',     subtype: 'current',   level: 2, parentCode: '101' },
     { code: '102',    name: 'الأصول الثابتة',                    type: 'asset',     subtype: 'fixed',     level: 1, parentCode: '1' },
-    { code: '1510',   name: 'الأصول الثابتة',                    type: 'asset',     subtype: 'fixed',     level: 2, parentCode: '102' },
+    
+{ code: '10201', name: 'المباني والإنشاءات',  type: 'asset', subtype: 'fixed', level: 2, parentCode: '102' },
+{ code: '10202', name: 'الآلات والمعدات',     type: 'asset', subtype: 'fixed', level: 2, parentCode: '102' },
+{ code: '10203', name: 'وسائل النقل والاتقال', type: 'asset', subtype: 'fixed', level: 2, parentCode: '102' },
+
+
+
+
+     
     { code: '2',      name: 'الخصوم',                            type: 'liability', subtype: 'current',   level: 0, parentCode: null },
     { code: '201',    name: 'الخصوم المتداولة',                  type: 'liability', subtype: 'current',   level: 1, parentCode: '2' },
     { code: '2010',   name: 'الموردون / الذمم الدائنة',          type: 'liability', subtype: 'current',   level: 2, parentCode: '201' },
