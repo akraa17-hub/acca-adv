@@ -17,31 +17,36 @@ async function loadAdminPanel() {
   document.getElementById('admin-content').style.display = 'none';
 
   try {
-    // جلب كل المستخدمين — البيانات في users/{uid}/data/state
+    // جلب بيانات كل المستخدمين من users/{uid}/data/state مباشرة
     const usersSnapshot = await db.collection('users').get();
 
-    const users = [];
+    const users   = [];
     const promises = [];
 
     usersSnapshot.forEach(userDoc => {
       const uid = userDoc.id;
-      const p = db.collection('users').doc(uid).collection('data').doc('state').get()
-        .then(stateDoc => {
-          if (stateDoc.exists) {
-            const data = stateDoc.data();
-            users.push({
-              uid,
-              email:    data.userEmail || data.settings?.email || uid,
-              company:  data.settings?.company || '—',
-              entries:  (data.journalEntries   || []).length,
-              invoices: (data.invoices          || []).length,
-              accounts: (data.accounts          || []).length,
-              contacts: (data.contacts          || []).length,
-              inventory:(data.inventory         || []).length,
-              updatedAt: data.updatedAt?.toDate?.()?.toLocaleDateString('ar-SA') || '—',
-            });
-          }
-        });
+      const p   = db.collection('users')
+                    .doc(uid)
+                    .collection('data')
+                    .doc('state')
+                    .get()
+                    .then(stateDoc => {
+                      if (!stateDoc.exists) return;
+                      const data = stateDoc.data();
+                      users.push({
+                        uid,
+                        email:     data.userEmail || '(UID: ' + uid.substring(0,8) + '...)',
+                        company:   data.settings?.company  || '—',
+                        entries:   (data.journalEntries    || []).length,
+                        invoices:  (data.invoices           || []).length,
+                        accounts:  (data.accounts           || []).length,
+                        contacts:  (data.contacts           || []).length,
+                        inventory: (data.inventory          || []).length,
+                        updatedAt: data.updatedAt?.toDate?.()
+                                     ?.toLocaleDateString('ar-SA') || '—',
+                      });
+                    })
+                    .catch(err => console.warn('خطأ في جلب بيانات:', uid, err));
       promises.push(p);
     });
 
@@ -49,6 +54,7 @@ async function loadAdminPanel() {
 
     renderAdminStats(users);
     renderAdminUsersList(users);
+    loadTemplateInfo();
 
   } catch (e) {
     console.error(e);
@@ -226,4 +232,76 @@ async function exportUserData(uid) {
 function refreshAdmin() {
   loadAdminPanel();
   showToast('جاري التحديث...', 'success');
+}
+
+/* ============================================================
+   إدارة القالب الافتراضي (Template Management)
+   القالب محفوظ في: templates/default/accounts
+   ============================================================ */
+
+/* ===== رفع شجرة الحسابات الحالية كقالب افتراضي ===== */
+async function uploadTemplate() {
+  if (!confirm('هل تريد رفع شجرة الحسابات الحالية كقالب افتراضي لكل المتدربين الجدد؟')) return;
+
+  try {
+    // جلب شجرة الحسابات من بيانات الأدمن
+    const ref     = getUserDocRef();
+    const doc     = await ref.get();
+    if (!doc.exists) { showToast('لا توجد بيانات في حسابك', 'error'); return; }
+
+    const accounts = doc.data().accounts || [];
+    if (!accounts.length) { showToast('شجرة الحسابات فارغة', 'error'); return; }
+
+    // حفظ القالب في Firestore
+    await db.collection('templates').doc('default').set({
+      accounts,
+      updatedAt:   firebase.firestore.FieldValue.serverTimestamp(),
+      updatedBy:   auth.currentUser.email,
+    });
+
+    showToast('✓ تم رفع القالب الافتراضي بنجاح', 'success');
+    loadTemplateInfo();
+
+  } catch(e) {
+    console.error(e);
+    showToast('تعذّر رفع القالب', 'error');
+  }
+}
+
+/* ===== عرض معلومات القالب الحالي ===== */
+async function loadTemplateInfo() {
+  try {
+    const doc = await db.collection('templates').doc('default').get();
+    const el  = document.getElementById('admin-template-info');
+    if (!el) return;
+
+    if (doc.exists) {
+      const data      = doc.data();
+      const updatedAt = data.updatedAt?.toDate?.()?.toLocaleString('ar-SA') || '—';
+      const count     = (data.accounts || []).length;
+      el.innerHTML = `
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <span class="badge badge-green">✓ قالب محفوظ</span>
+          <span style="font-size:12px;color:var(--text2)">${count} حساب</span>
+          <span style="font-size:11px;color:var(--text3)">آخر تحديث: ${updatedAt}</span>
+          <span style="font-size:11px;color:var(--text3)">بواسطة: ${data.updatedBy || '—'}</span>
+        </div>`;
+    } else {
+      el.innerHTML = '<span class="badge badge-yellow">⚠ لا يوجد قالب محفوظ بعد</span>';
+    }
+  } catch(e) {
+    console.error(e);
+  }
+}
+
+/* ===== حذف القالب الافتراضي ===== */
+async function deleteTemplate() {
+  if (!confirm('هل تريد حذف القالب الافتراضي؟ المتدربون الجدد سيحصلون على الشجرة الافتراضية من الكود.')) return;
+  try {
+    await db.collection('templates').doc('default').delete();
+    showToast('تم حذف القالب', 'success');
+    loadTemplateInfo();
+  } catch(e) {
+    showToast('تعذّر الحذف', 'error');
+  }
 }
