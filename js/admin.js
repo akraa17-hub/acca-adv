@@ -4,44 +4,51 @@
 
 const ADMIN_EMAIL = 'akr.aa17@gmail.com';
 
+// قائمة المستخدمين المسجلين (UID + البريد)
+const KNOWN_USERS = [
+  { uid: 'mKcM0kBli5RML86wZdzeIPvSxXo2', email: 'acca.akr@gmail.com' },
+  { uid: 'aYmTunpZj9RenJW3dAupPBa99rz1', email: '17akr.aa@gmail.com' },
+];
+
 async function loadAdminPanel() {
   document.getElementById('admin-loading').style.display = 'block';
   document.getElementById('admin-content').style.display = 'none';
 
   try {
-    // جلب قائمة المستخدمين من usersList
-    const snap  = await db.collection('usersList').get();
     const users = [];
 
-    for (const doc of snap.docs) {
-      const uid      = doc.id;
-      const listData = doc.data();
+    for (const u of KNOWN_USERS) {
       try {
-        const stateDoc = await db.collection('users').doc(uid)
+        const stateDoc = await db.collection('users').doc(u.uid)
                                   .collection('data').doc('state').get();
         if (stateDoc.exists) {
           const data = stateDoc.data();
           users.push({
-            uid,
-            email:     listData.email || uid,
+            uid:       u.uid,
+            email:     u.email,
             company:   data.settings?.company   || '—',
             entries:   (data.journalEntries      || []).length,
             invoices:  (data.invoices             || []).length,
             contacts:  (data.contacts             || []).length,
             inventory: (data.inventory            || []).length,
-            updatedAt: listData.lastLogin?.toDate?.()
+            updatedAt: data.updatedAt?.toDate?.()
                          ?.toLocaleDateString('ar-SA') || '—',
           });
         } else {
           users.push({
-            uid, email: listData.email || uid,
+            uid: u.uid, email: u.email,
             company: '—', entries: 0, invoices: 0,
-            contacts: 0, inventory: 0,
-            updatedAt: listData.lastLogin?.toDate?.()
-                         ?.toLocaleDateString('ar-SA') || '—',
+            contacts: 0, inventory: 0, updatedAt: '—',
           });
         }
-      } catch(e) { console.warn('خطأ في جلب بيانات:', uid, e); }
+      } catch(e) {
+        console.warn('خطأ في جلب بيانات:', u.uid, e);
+        users.push({
+          uid: u.uid, email: u.email,
+          company: 'خطأ في التحميل', entries: 0,
+          invoices: 0, contacts: 0, inventory: 0, updatedAt: '—',
+        });
+      }
     }
 
     renderAdminStats(users);
@@ -74,7 +81,7 @@ function renderAdminStats(users) {
 function renderAdminUsersList(users) {
   const tbody = document.getElementById('admin-users-body');
   if (!users.length) {
-    tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><p>لا يوجد متدربون مسجلون بعد</p></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><p>لا يوجد متدربون</p></div></td></tr>';
     return;
   }
   tbody.innerHTML = users.map((u,i) => `
@@ -121,7 +128,7 @@ async function viewUserData(uid) {
           <td>${e.date}</td><td class="fw-800 text-accent">${e.number}</td>
           <td>${escH(e.desc)}</td><td class="text-green">${fmt(e.debitTotal)}</td>
           <td class="text-red">${fmt(e.creditTotal)}</td></tr>`).join('')
-          ||'<tr><td colspan="5" class="text-muted" style="text-align:center">لا قيود</td></tr>'}
+          ||'<tr><td colspan="5" class="text-muted" style="text-align:center;padding:12px">لا قيود</td></tr>'}
         </tbody>
       </table></div>
     </div>
@@ -133,7 +140,7 @@ async function viewUserData(uid) {
           <td>${i.date}</td><td class="fw-800 text-accent">${i.number}</td>
           <td><span class="badge ${i.type==='sale'?'badge-green':'badge-blue'}">${i.type==='sale'?'مبيعات':'مشتريات'}</span></td>
           <td>${escH(i.partyName||'—')}</td><td class="fw-800">${fmt(i.total)}</td></tr>`).join('')
-          ||'<tr><td colspan="5" class="text-muted" style="text-align:center">لا فواتير</td></tr>'}
+          ||'<tr><td colspan="5" class="text-muted" style="text-align:center;padding:12px">لا فواتير</td></tr>'}
         </tbody>
       </table></div>
     </div>
@@ -162,15 +169,12 @@ async function exportUserData(uid) {
 }
 
 async function deleteUserData(uid, email) {
-  if (!confirm(`هل تريد حذف بيانات ${email}؟\nسيتم حذف كل قيوده وفواتيره ومخزونه.`)) return;
+  if (!confirm(`هل تريد حذف بيانات ${email}؟`)) return;
   try {
     await db.collection('users').doc(uid).collection('data').doc('state').delete();
-    await db.collection('usersList').doc(uid).delete();
     showToast('تم الحذف ✓', 'success');
     loadAdminPanel();
-  } catch(e) {
-    showToast('تعذّر الحذف: ' + e.message, 'error');
-  }
+  } catch(e) { showToast('تعذّر الحذف: ' + e.message, 'error'); }
 }
 
 function refreshAdmin() { loadAdminPanel(); }
