@@ -63,6 +63,9 @@ const pageInfo = {
   sales:             ['فواتير المبيعات',       'إصدار وإدارة فواتير العملاء'],
   purchases:         ['فواتير المشتريات',      'تسجيل مشتريات الموردين'],
   inventory:         ['المخزون',               'إدارة الأصناف والكميات'],
+  receipts:          ['سندات القبض',          'تسجيل المبالغ المستلمة من العملاء'],
+  payments:          ['سندات الصرف',          'تسجيل المبالغ المدفوعة للموردين'],
+  receipts:          ['سندات القبض والدفع',   'تسجيل المقبوضات والمدفوعات'],
   customers:         ['العملاء',               'إدارة بيانات العملاء'],
   suppliers:         ['الموردون',              'إدارة بيانات الموردين'],
   accounts:          ['شجرة الحسابات',         'الهيكل الهرمي للحسابات'],
@@ -108,6 +111,8 @@ function showAddModal() {
   else if (id === 'sales')     openInvoiceModal('sale');
   else if (id === 'purchases') openInvoiceModal('purchase');
   else if (id === 'inventory') openInventoryModal();
+  else if (id === 'receipts')  openReceiptModal('receipt');
+  else if (id === 'payments')  openReceiptModal('payment');
   else if (id === 'customers') openContactModal('customer');
   else if (id === 'suppliers') openContactModal('supplier');
 }
