@@ -17,25 +17,35 @@ async function loadAdminPanel() {
   document.getElementById('admin-content').style.display = 'none';
 
   try {
-    // جلب كل المستخدمين من Firestore
-    const snapshot = await db.collection('users').get();
+    // جلب كل المستخدمين — البيانات في users/{uid}/data/state
+    const usersSnapshot = await db.collection('users').get();
 
     const users = [];
-    snapshot.forEach(doc => {
-      const data = doc.data();
-      users.push({
-        uid:     doc.id,
-        email:   data.email    || '—',
-        company: data.settings?.company || '—',
-        entries: (data.journalEntries || []).length,
-        invoices:(data.invoices       || []).length,
-        accounts:(data.accounts       || []).length,
-        contacts:(data.contacts       || []).length,
-        inventory:(data.inventory     || []).length,
-        updatedAt: data.updatedAt?.toDate?.()?.toLocaleDateString('ar-SA') || '—',
-        _data: data
-      });
+    const promises = [];
+
+    usersSnapshot.forEach(userDoc => {
+      const uid = userDoc.id;
+      const p = db.collection('users').doc(uid).collection('data').doc('state').get()
+        .then(stateDoc => {
+          if (stateDoc.exists) {
+            const data = stateDoc.data();
+            users.push({
+              uid,
+              email:    data.userEmail || data.settings?.email || uid,
+              company:  data.settings?.company || '—',
+              entries:  (data.journalEntries   || []).length,
+              invoices: (data.invoices          || []).length,
+              accounts: (data.accounts          || []).length,
+              contacts: (data.contacts          || []).length,
+              inventory:(data.inventory         || []).length,
+              updatedAt: data.updatedAt?.toDate?.()?.toLocaleDateString('ar-SA') || '—',
+            });
+          }
+        });
+      promises.push(p);
     });
+
+    await Promise.all(promises);
 
     renderAdminStats(users);
     renderAdminUsersList(users);
