@@ -87,6 +87,26 @@
     <!-- الإحصائيات -->
     <div id="admin-stats"></div>
 
+    <!-- قسم القالب الافتراضي -->
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title"><span class="dot" style="background:var(--teal)"></span>القالب الافتراضي لشجرة الحسابات</div>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <div id="admin-template-info" style="flex:1">
+          <span class="badge badge-yellow">⏳ جاري التحقق...</span>
+        </div>
+        <div style="display:flex;gap:8px;flex-shrink:0">
+          <button class="btn btn-primary btn-sm" onclick="uploadTemplate()" title="رفع شجرة حساباتك الحالية كقالب للمتدربين الجدد">
+            📤 رفع شجرتي كقالب
+          </button>
+          <button class="btn btn-ghost btn-sm" onclick="loadTemplateInfo()">🔄 تحديث</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteTemplate()">🗑 حذف القالب</button>
+        </div>
+      </div>
+      <div style="margin-top:10px;padding:9px 13px;background:var(--surface2);border-radius:7px;font-size:11.5px;color:var(--text3)">
+        💡 عند رفع القالب، كل متدرب جديد يسجّل للمرة الأولى سيحصل على نفس شجرة حساباتك تلقائياً.
+      </div>
+    </div>
+
     <!-- جدول المتدربين -->
     <div class="card">
       <div class="card-title"><span class="dot"></span>قائمة المتدربين</div>
@@ -172,6 +192,7 @@
       <button class="btn btn-print no-print" onclick="printPage()">🖨️ <span>طباعة</span></button>
       <button class="btn btn-ghost no-print" onclick="exportData()">📤 <span>تصدير</span></button>
       <button class="btn btn-primary no-print" onclick="showAddModal()">+ <span>إضافة</span></button>
+      <button class="btn btn-ghost no-print" id="btn-switch-admin" onclick="switchToAdmin()" title="لوحة الأدمن" style="display:none">🛡️ الأدمن</button>
       <button class="btn btn-ghost no-print" onclick="signOut()" title="تسجيل الخروج" style="gap:4px">
         <span id="user-email" style="font-size:11px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
         🚪
